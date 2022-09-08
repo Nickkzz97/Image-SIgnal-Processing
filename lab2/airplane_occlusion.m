@@ -1,0 +1,42 @@
+
+imagefile1=input('Image file name1: ','s');
+imagefile2=input('Image file name2: ','s');
+
+[H12,V]=homo_RANSAC(imagefile1,imagefile2,0)
+I1=imread(imagefile1);
+if length(size(I1))==3
+    I1=rgb2gray(I1);
+end   
+I2=imread(imagefile2);
+if length(size(I2))==3
+I2=rgb2gray(I2);
+end
+[h,w]=size(I1);
+[h1,w1]=size(I2);
+canvas1=zeros(2*h,2*w);canvas2=zeros(2*h,2*w);
+for jj=1:size(canvas1,1)
+for ii=1:size(canvas1,2)
+i=ii-30;
+j=jj-30;
+tmp=inv(H12)*[i;j;1];
+i1=tmp(1)/tmp(3);
+j1=tmp(2)/tmp(3);
+[v1]=inter(i1,j1,I2);
+[v2]=inter(i,j,I1);%%%%%reference image
+if (v1~=0)&&(v2~=0)%&&(v3~=0)
+       canvas1(ii,jj)=v1;
+       canvas2(ii,jj)=v2;
+elseif (v1~=0)&&(v2==0)%&&(v3==0)
+            canvas1(ii,jj)=v1;
+        %elseif (v2~=0)&&(v3==0)&& (v1==0)
+          %  canvas(ii,jj)=v2;  
+        %elseif (v3~=0)&&(v1==0)&&(v2==0)
+            %canvas(ii,jj)=v3;
+elseif(v1==0)&&(v2~=0)%&&(v3~=0)
+   canvas2(ii,jj)=v2;
+end
+end
+end
+figure,imshow(uint8(canvas1));
+figure,imshow(uint8(canvas2));
+% figure,imshow(uint8(canvas1-canvas2));

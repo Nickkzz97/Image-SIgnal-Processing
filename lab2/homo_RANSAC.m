@@ -1,0 +1,65 @@
+function [H,v]=homo_RANSAC(imagefile1,imagefile2,a)
+[corresp1, corresp2] = sift_corresp(imagefile1, imagefile2);
+if a==1
+    lim=0.8*size(corresp1,1);
+else
+    lim=330;
+end
+   
+co=0;
+       
+       
+if (co<lim)
+    
+    co=0;
+   
+    [corresp1, corresp2] = sift_corresp(imagefile1, imagefile2);
+
+    [m n]=size(corresp1);
+    x1=floor((rand*m));
+    x2=floor((rand*m));
+    x3=floor((rand*m));
+    x4=floor((rand*m));
+
+   if (a)
+        %%calculate Homography
+         [h,v]=homo_mat(corresp1(x1,:),corresp2(x1,:),...
+         corresp1(x2,:),corresp2(x2,:),...
+         corresp1(x3,:),corresp2(x3,:),...
+         corresp1(x4,:),corresp2(x4,:));
+   
+         H=h;
+         [m n]=size(corresp1);
+         for x5=1:m
+            [xx] = H*[corresp1(x5,1);corresp1(x5,2);1];
+            xx(1)=xx(1)/xx(3);
+            xx(2)=xx(2)/xx(3);
+            d=sqrt((corresp2(x5,1)-xx(1)).^2 +(corresp2(x5,2)-xx(2)).^2);
+            if d<5
+               co=co+1;
+            end
+         end
+    else
+          [h,v]=homo_mat(corresp2(x1,:),corresp1(x1,:),...
+          corresp2(x2,:),corresp1(x2,:),...
+          corresp2(x3,:),corresp1(x3,:),...
+          corresp2(x4,:),corresp1(x4,:));
+
+          H=h;
+
+         [m n]=size(corresp1);
+         for x5=1:m
+             [xx] = H*[corresp2(x5,1);corresp2(x5,2);1];
+             xx(1)=xx(1)/xx(3);
+             xx(2)=xx(2)/xx(3);
+             d=sqrt((corresp1(x5,1)-xx(1)).^2 +(corresp1(x5,2)-xx(2)).^2);
+             if d<5
+                co=co+1;
+             end
+         end
+
+  end
+
+end
+
+

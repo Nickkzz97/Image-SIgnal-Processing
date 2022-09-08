@@ -1,0 +1,128 @@
+clear all
+clc
+% close all
+% imagefile1=input('Image file name1: ','s');
+% imagefile2=input('Image file name2: ','s');
+%%%%Mosaic 2 imges%%%%
+imagefile1='img1.jpg';
+imagefile2='img2.jpg';
+
+H12=homo_RANSAC(imagefile1,imagefile2,0)
+I1=imread('img1.jpg');
+if length(size(I1))==3
+    Img1=rgb2gray(I1);
+end   
+I2=imread('img2.jpg');
+if length(size(I2))==3
+Img2=rgb2gray(I2);
+end
+[h,w,k]=size(I1)
+canvas1=zeros(1168,1556,k,'uint8');%canvas2=zeros(2*296,8003,'uint8');
+for jj=1:1268
+for ii=1:1168
+i=ii-110;    %%%%vertical displacement
+j=jj-30;
+tmp=inv(H12)*[i;j;1];
+i1=tmp(1)/tmp(3);
+j1=tmp(2)/tmp(3);
+[v1]=inter(i1,j1,I2);
+[v2]=inter(i,j,I1);   %%%%first image as reference
+% if v1~=0
+%     canvas1(ii,jj,:)=v1;
+if (v1~=0)&&(v2~=0)%&&(v3~=0)
+       canvas1(ii,jj,:)=v1;
+%        %canvas2(ii,jj)=v2;
+% 
+elseif (v1==0)&&(v2==0)%&&(v3~=0)
+       canvas1(ii,jj,:)=0;
+elseif (v1~=0)&&(v2==0)%&&(v3==0)
+            canvas1(ii,jj,:)=v1;
+
+elseif(v1==0)&&(v2~=0)%&&(v3~=0)
+   canvas1(ii,jj,:)=v2;
+end
+end
+end
+
+figure,imshow(uint8(canvas1));
+
+% %Mosaic 3 images
+
+imagefile1=input('Image file name1: ','s');
+imagefile2=input('Image file name2: ','s');
+imagefile3=input('Image file name3: ','s');
+
+
+H21=homo_RANSAC(imagefile2,imagefile1,0)
+
+
+
+H23=homo_RANSAC(imagefile2,imagefile3,1)
+
+I1=imread(imagefile1);
+I2=imread(imagefile2);
+I3=imread(imagefile3);
+% figure,imshow(I1)
+% figure,imshow(I2)
+% figure,imshow(I3)
+canvas=zeros(800,1500,3,'uint8');
+
+for jj=1:1300
+    for ii=1:800
+        i=ii-80;
+        j=jj-560;
+        tmp1=inv(H21)*[i;j;1];
+        i1=tmp1(1)/tmp1(3);
+        j1=tmp1(2)/tmp1(3);
+        
+        tmp2=(H23)*[i;j;1];
+        i3=tmp2(1)/tmp2(3);
+        j3=tmp2(2)/tmp2(3);
+        
+        [v1]=inter(i1,j1,I1);
+        [v2]=inter(i,j,I2);
+        [v3]=inter(i3,j3,I3);
+       
+       %if (v1==0)&&(v2==0)&&(v3==0)
+         %  canvas(ii,jj)=0;
+%          if (v2~=0)
+%              canvas(ii,jj)=v2;
+        if (v1~=0)&&(v2~=0)&&(v3~=0)
+           canvas(ii,jj,:)=v3;
+        elseif (v1==0)&&(v2==0)&&(v3==0)
+            canvas(ii,jj,:)=0;
+        elseif (v1~=0)&&(v2==0)&&(v3==0)
+            canvas(ii,jj,:)=v1;
+        elseif (v2~=0)&&(v3==0)&& (v1==0)
+            canvas(ii,jj,:)=v2;  
+        elseif (v3~=0)&&(v1==0)&&(v2==0)
+            canvas(ii,jj,:)=v3;
+        elseif (v1~=0)&&(v2~=0)&&(v3==0)
+            canvas(ii,jj,:)=v2;
+%        
+        elseif (v1==0)&&(v3~=0)&& (v2~=0)
+            canvas(ii,jj,:)=v3;  
+%         elseif (v3~=0)&&(v1~=0)&&(v2==0)
+%              canvas(ii,jj)=v3;
+%             elseif(v1~=0)&&(v2==0)&&(v3~=0)
+%             canvas(ii,jj)=v1;
+%         elseif(v1~=0)&&(v2==0)
+%             canvas(ii,jj)=v1;
+%         elseif(v1~=0)&&(v2~=0)
+%             canvas(ii,jj)=v2;
+%         elseif (v3~=0)&&(v2==0)
+%             canvas(ii,jj)=v3;
+%         elseif(v3~=0)&&(v2~=0)
+%             canvas(ii,jj)=v2;
+        
+            
+            
+        end           
+       
+    end
+end
+
+
+
+figure
+imshow(uint8(canvas));
